@@ -31,7 +31,6 @@ class VQAHandler(object):
             logits, hidden_reps = model(image=image, question=language_tokens, padding_mask=padding_mask)
             ce_loss = self.criterion(input=logits.float(), target=labels.float()) * labels.shape[1]
             clip_loss_img, clip_loss_text, clip_loss_fusion = None, None, None
-            mse_loss_fusion, kd_loss = None, None
             if args.prototype_as_rep_target:
                 index = torch.argmax(labels, dim=1).detach()
                 clip_loss_img = self.ClipLossHalf(hidden_reps["img_rep"], prototypes["img"][index],
@@ -40,17 +39,9 @@ class VQAHandler(object):
                                                    self.clip_logits_scale.exp())
                 clip_loss_fusion = self.ClipLossHalf(hidden_reps["fusion_rep"], prototypes["fusion"][index],
                                                      self.clip_logits_scale.exp())
-            if args.fedpac:
-                index = torch.argmax(labels, dim=1).detach()
-                mse_loss_fusion = self.MSELoss(input=hidden_reps["fusion_rep"], target=prototypes["fusion"][index])
-            if args.fedhkd:
-                logits_for_prototypes = model.module.head_forward(prototypes["fusion"])
-                soft_target_for_prototypes = torch.nn.functional.softmax(logits_for_prototypes / args.kd_temperature, dim=-1)
-                kd_loss = self.KDLoss(input=soft_target_for_prototypes, target=prototypes["target"])
             return {
                 "ce_loss": ce_loss,
                 "clip_loss_img": clip_loss_img, "clip_loss_text": clip_loss_text, "clip_loss_fusion": clip_loss_fusion,
-                "mse_loss_fusion": mse_loss_fusion, "kd_loss": kd_loss,
             }
 
         elif mode == "v":
@@ -63,24 +54,15 @@ class VQAHandler(object):
                                         prototype=text_prototypes)
             ce_loss = self.criterion(input=logits.float(), target=labels.float()) * labels.shape[1]
             clip_loss_img, clip_loss_text, clip_loss_fusion = None, None, None
-            mse_loss_fusion, kd_loss = None, None
             if args.prototype_as_rep_target:
                 index = torch.argmax(labels, dim=1).detach()
                 clip_loss_img = self.ClipLossHalf(hidden_reps["img_rep"], prototypes["img"][index],
                                                   self.clip_logits_scale.exp())
                 clip_loss_fusion = self.ClipLossHalf(hidden_reps["fusion_rep"], prototypes["fusion"][index],
                                                      self.clip_logits_scale.exp())
-            if args.fedpac:
-                index = torch.argmax(labels, dim=1).detach()
-                mse_loss_fusion = self.MSELoss(input=hidden_reps["fusion_rep"], target=prototypes["fusion"][index])
-            if args.fedhkd:
-                logits_for_prototypes = model.module.head_forward(prototypes["fusion"])
-                soft_target_for_prototypes = torch.nn.functional.softmax(logits_for_prototypes / args.kd_temperature, dim=-1)
-                kd_loss = self.KDLoss(input=soft_target_for_prototypes, target=prototypes["target"])
             return {
                 "ce_loss": ce_loss,
                 "clip_loss_img": clip_loss_img, "clip_loss_text": clip_loss_text, "clip_loss_fusion": clip_loss_fusion,
-                "mse_loss_fusion": mse_loss_fusion, "kd_loss": kd_loss,
             }
 
         elif mode == "l":
@@ -93,24 +75,15 @@ class VQAHandler(object):
                                         prototype=img_prototypes)
             ce_loss = self.criterion(input=logits.float(), target=labels.float()) * labels.shape[1]
             clip_loss_img, clip_loss_text, clip_loss_fusion = None, None, None
-            mse_loss_fusion, kd_loss = None, None
             if args.prototype_as_rep_target:
                 index = torch.argmax(labels, dim=1).detach()
                 clip_loss_text = self.ClipLossHalf(hidden_reps["text_rep"], prototypes["text"][index],
                                                    self.clip_logits_scale.exp())
                 clip_loss_fusion = self.ClipLossHalf(hidden_reps["fusion_rep"], prototypes["fusion"][index],
                                                      self.clip_logits_scale.exp())
-            if args.fedpac:
-                index = torch.argmax(labels, dim=1).detach()
-                mse_loss_fusion = self.MSELoss(input=hidden_reps["fusion_rep"], target=prototypes["fusion"][index])
-            if args.fedhkd:
-                logits_for_prototypes = model.module.head_forward(prototypes["fusion"])
-                soft_target_for_prototypes = torch.nn.functional.softmax(logits_for_prototypes / args.kd_temperature, dim=-1)
-                kd_loss = self.KDLoss(input=soft_target_for_prototypes, target=prototypes["target"])
             return {
                 "ce_loss": ce_loss,
                 "clip_loss_img": clip_loss_img, "clip_loss_text": clip_loss_text, "clip_loss_fusion": clip_loss_fusion,
-                "mse_loss_fusion": mse_loss_fusion, "kd_loss": kd_loss,
             }
 
         else:
@@ -226,16 +199,6 @@ def train_one_epoch(
         if args.fusion_proto_target:
             clip_loss_fusion_value = clip_loss_fusion.item()
 
-        mse_loss_fusion = results.pop("mse_loss_fusion")
-        mse_loss_fusion_value = np.nan
-        if args.fedpac:
-            mse_loss_fusion_value = mse_loss_fusion.item()
-
-        kd_loss = results.pop("kd_loss")
-        kd_loss_value = np.nan
-        if args.fedhkd:
-            kd_loss_value = kd_loss.item() / args.num_classes / utils.get_world_size()
-
         loss = ce_loss
         if args.img_proto_target:
             if mode == "vl" or mode == "v":
@@ -245,10 +208,6 @@ def train_one_epoch(
                 loss += clip_loss_text * args.l_loss_weight
         if args.fusion_proto_target:
             loss += clip_loss_fusion * args.f_loss_weight
-        if args.fedpac:
-            loss += mse_loss_fusion / args.embed_dim * args.mse_loss_weight
-        if args.fedhkd:
-            loss += kd_loss / args.num_classes / utils.get_world_size() * args.kd_loss_weight
 
         loss_value = loss.item()
         if not math.isfinite(loss_value):
@@ -274,8 +233,6 @@ def train_one_epoch(
         metric_logger.update(clip_loss_i=clip_loss_img_value)
         metric_logger.update(clip_loss_t=clip_loss_text_value)
         metric_logger.update(clip_loss_f=clip_loss_fusion_value)
-        metric_logger.update(mse_loss_f=mse_loss_fusion_value)
-        metric_logger.update(kd_loss=kd_loss_value)
         metric_logger.update(loss_scale=loss_scale_value)
         min_lr = 10.0
         max_lr = 0.0
@@ -293,11 +250,10 @@ def train_one_epoch(
         metric_logger.update(grad_norm=grad_norm)
 
         logger.write("global_epoch{%d} local_epoch{%d} [%d/%d] min_lr=%.6f lr=%.6f "
-                     "loss=%.6f ce=%.6f clip_i=%.6f clip_t=%.6f clip_f=%.6f mse=%.6f kd=%.6f loss_scale=%.2f"
+                     "loss=%.6f ce=%.6f clip_i=%.6f clip_t=%.6f clip_f=%.6f loss_scale=%.2f"
                      " weight_decay=%.4f gn=%.6f" % (global_epoch, local_epoch, step, total_steps, min_lr, max_lr,
                                                      loss_value, ce_loss_value, clip_loss_img_value,
                                                      clip_loss_text_value, clip_loss_fusion_value,
-                                                     mse_loss_fusion_value, kd_loss_value,
                                                      loss_scale_value, weight_decay_value, grad_norm)
                      )
 
