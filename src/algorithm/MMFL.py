@@ -188,15 +188,8 @@ class MMFL:
 
             # get fedavg weight for each client
             sample_per_party_client = []
-            if not self.args.fediot:
-                for client_id in party_list:
-                    sample_per_party_client.append(float(self.sample_num_dict[client_id][aggregation_factor]))
-            else:
-                for idx, client_id in enumerate(party_list):
-                    sample_per_party_client.append(100 * float(self.sample_num_dict[client_id]["img-text"]))
-                    sample_per_party_client[idx] += float(self.sample_num_dict[client_id]["img-only"])
-                    sample_per_party_client[idx] += float(self.sample_num_dict[client_id]["text-only"])
-                    sample_per_party_client[idx] += float(self.sample_num_dict[client_id]["both-missing"])
+            for client_id in party_list:
+                sample_per_party_client.append(float(self.sample_num_dict[client_id][aggregation_factor]))
             total_sample_cur_round = sum(sample_per_party_client)
             fed_avg_freqs = [i / total_sample_cur_round for i in sample_per_party_client]
             self.logger.write("fedavg weight:")
