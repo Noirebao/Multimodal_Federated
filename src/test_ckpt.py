@@ -32,18 +32,8 @@ if __name__ == '__main__':
 
     model.to(device)
 
-    ckpt_path = "./save_weight/scale/server/global_model-9.pth"  # 6
-    # ckpt_path = "./exp-res/noniid0.1-missmodal0.5/baseline3-pac/server/global_model-14.pth"
-
-    # CUDA_VISIBLE_DEVICES='0' python -m torch.distributed.launch --master_port='29510' --nproc_per_node=1 test_ckpt.py
-    # CUDA_VISIBLE_DEVICES='1' python -m torch.distributed.launch --master_port='29511' --nproc_per_node=1 test_ckpt.py
-    # CUDA_VISIBLE_DEVICES='2' python -m torch.distributed.launch --master_port='29512' --nproc_per_node=1 test_ckpt.py
-    # CUDA_VISIBLE_DEVICES='3' python -m torch.distributed.launch --master_port='29513' --nproc_per_node=1 test_ckpt.py
-    # CUDA_VISIBLE_DEVICES='4' python -m torch.distributed.launch --master_port='29514' --nproc_per_node=1 test_ckpt.py
-    # CUDA_VISIBLE_DEVICES='5' python -m torch.distributed.launch --master_port='29515' --nproc_per_node=1 test_ckpt.py
-    # CUDA_VISIBLE_DEVICES='6' python -m torch.distributed.launch --master_port='29516' --nproc_per_node=1 test_ckpt.py
-    # CUDA_VISIBLE_DEVICES='7' python -m torch.distributed.launch --master_port='29517' --nproc_per_node=1 test_ckpt.py
-
+    ckpt_path = "./save_weight/weight.pth"
+    
     utils.load_model_and_may_interpolate(
         ckpt_path=ckpt_path, model=model, model_key='model|module', model_prefix=''
     )
