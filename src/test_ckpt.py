@@ -32,7 +32,7 @@ if __name__ == '__main__':
 
     model.to(device)
 
-    ckpt_path = "./save_weight/weight.pth"
+    ckpt_path = "./save_weight/server/global_model-30.pth"
     
     utils.load_model_and_may_interpolate(
         ckpt_path=ckpt_path, model=model, model_key='model|module', model_prefix=''
