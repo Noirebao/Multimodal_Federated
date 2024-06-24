@@ -72,8 +72,8 @@ def get_args():
     # parameter for dump predictions (VQA, COCO captioning, NoCaps)
     parser.add_argument('--task_cache_path', default=None, type=str)
     # result parameters
-    parser.add_argument('--output_dir', default='./save_weight/scale')
-    parser.add_argument('--log_path', default='./save_weight/scale/log.txt')
+    parser.add_argument('--output_dir', default='./save_weight')
+    parser.add_argument('--log_path', default='./save_weight/log.txt')
     # important optimizer parameters
     parser.add_argument('--weight_decay', type=float, default=0.0001)
     parser.add_argument('--lr', type=float, default=3e-5)
