@@ -9,15 +9,15 @@ The VQAv2 dataset needs to be placed in the following directory:
 
 ```
 ├── src
-│   └── data
-│        ├── train2014
+│    └── data
+│         ├── train2014
 │               └── (images)
-│        ├── val2015
+│         ├── val2015
 │               └── (images)
-│        ├── test2015
+│         ├── test2015
 │               └── (images)
-│        ├── vqa
-│             └── (annotations)
+│         ├── vqa
+│               └── (annotations)
 ```
 
 
