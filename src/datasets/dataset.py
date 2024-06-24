@@ -610,11 +610,11 @@ def iid_data_loader(args, is_eval=False):
 if __name__ == '__main__':
     pass
     # run in Terminal
-    # from datasets.dataset import VQAv2Dataset
+    from datasets.dataset import VQAv2Dataset
     from transformers import XLMRobertaTokenizer
     tokenizer = XLMRobertaTokenizer("init_weight/beit3.spm")
     VQAv2Dataset.make_dataset_index(data_path="./data", tokenizer=tokenizer, annotation_data_path="data/vqa", scale=False)
-    # VQAv2Dataset.make_modal_missing_index('./data', modal_missing_rate=0.0, alpha=0.1, n_clients=35, n_classes=3129)
+    VQAv2Dataset.make_modal_missing_index('./data', modal_missing_rate=0.5, alpha=0.1, n_clients=30, n_classes=310)
 
 
 
