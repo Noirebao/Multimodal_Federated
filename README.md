@@ -1,3 +1,8 @@
+
+# Latest News
+The latest version of the manuscript associated with this project has been accepted for publication in IEEE Transactions on Neural Networks and Learning Systems (TNNLS).
+
+
 # Prototype Mask and Contrast for Multimodal FL
 Official Implementation of paper "Incomplete Multimodal Federated Learning via Masking and Contrasting Prototypes". In this repository, we provide the implementation of the PmcmFL (**P**rototype **M**ask and **C**ontrast for **M**ultimodal **F**ederated **L**earning) algorithm.
 
