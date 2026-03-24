@@ -1,6 +1,6 @@
 
 # Latest News
-The latest version of the manuscript associated with this project has been accepted for publication in IEEE Transactions on Neural Networks and Learning Systems (10.1109/TNNLS.2026.3658522).
+The latest version of the manuscript associated with this project has been accepted for publication in IEEE Transactions on Neural Networks and Learning Systems (DOI: 10.1109/TNNLS.2026.3658522 ).
 
 
 # Prototype Mask and Contrast for Multimodal FL
